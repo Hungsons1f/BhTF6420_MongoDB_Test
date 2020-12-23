@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <POU Name="MAIN" Id="{739b46bf-d99f-41e1-a248-f35519a17b2d}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	i: BYTE := 0;
+	bStart: BOOL := TRUE;
+	bLog: BOOL := FALSE;
+
+	//Query Builder for Document DB
+	fbNoSqlQueryBuilder_DocumentDB: FB_NoSQLQueryBuilder_DocumentDB;
+	InsertQueryOption: T_QueryOptionDocumentDB_Insert;
+	sDocument: STRING (1000);
+
+	//Query Execution
+	fbNoSqlQuery: FB_NoSQLQueryEvt(sNetID:= '', tTimeout:= T#5S);
+	myDBID: UDINT := 1;
+	TcMessage: I_TcMessage;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bStart THEN
+	CreateQuery();
+	bStart:= FALSE;
+END_IF
+
+IF bLog THEN
+	CreateDocument();
+	IF fbNoSqlQuery.Execute(hDBID:= myDBID, iNoSQLQueryBuilder:= fbNoSqlQueryBuilder_DocumentDB) THEN
+		IF fbNoSqlQuery.bError THEN
+			TcMessage:= fbNoSqlQuery.ipTcResult;
+		END_IF
+		bLog:= FALSE;
+		i := i + 1;
+	END_IF
+END_IF
+]]></ST>
+    </Implementation>
+    <Action Name="CreateDocument" Id="{bb4591cd-873d-4799-aa4b-b85a07d5e57e}">
+      <Implementation>
+        <ST><![CDATA[sDocument:= '{"name": "son",
+				"position": "intern",
+				"dateOfBirth": "27-07-1999",
+				"number":';
+sDocument := CONCAT(STR1:= sDocument, STR2:= BYTE_TO_STRING(i));
+sDocument := CONCAT(STR1:= sDocument, STR2:= '}');
+
+	
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="CreateQuery" Id="{2655315e-f323-4ad5-bfc9-07379b6667a2}">
+      <Implementation>
+        <ST><![CDATA[InsertQueryOption.pDocuments := ADR(sDocument);
+InsertQueryOption.cbDocuments := SIZEOF(sDocument);
+
+fbNoSqlQueryBuilder_DocumentDB.eQueryType := E_DocumentDbQueryType.InsertOne;
+fbNoSqlQueryBuilder_DocumentDB.sCollectionName := 'Customer';
+fbNoSqlQueryBuilder_DocumentDB.pQueryOptions := ADR(InsertQueryOption);
+fbNoSqlQueryBuilder_DocumentDB.cbQueryOptions := SIZEOF(InsertQueryOption);
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="MAIN">
+      <LineId Id="40" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="41" Count="1" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="68" Count="3" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="28" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.CreateDocument">
+      <LineId Id="2" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="13" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.CreateQuery">
+      <LineId Id="2" Count="1" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="4" Count="2" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
